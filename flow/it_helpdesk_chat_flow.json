@@ -1,0 +1,693 @@
+{
+ "Version": "2019-10-30",
+ "StartAction": "EnableFlowLogs",
+ "Metadata": {
+  "entryPointPosition": {
+   "x": 20,
+   "y": 20
+  },
+  "ActionMetadata": {
+   "EnableFlowLogs": {
+    "position": {
+     "x": 160,
+     "y": 20
+    }
+   },
+   "SetLanguage": {
+    "position": {
+     "x": 400,
+     "y": 20
+    }
+   },
+   "CheckChat": {
+    "position": {
+     "x": 640,
+     "y": 20
+    }
+   },
+   "StartStreaming": {
+    "position": {
+     "x": 880,
+     "y": 20
+    }
+   },
+   "GetInput": {
+    "position": {
+     "x": 1120,
+     "y": 20
+    }
+   },
+   "GetInputNoInit": {
+    "position": {
+     "x": 1120,
+     "y": 360
+    }
+   },
+   "CheckNextStep": {
+    "position": {
+     "x": 1400,
+     "y": 20
+    }
+   },
+   "CheckTargetQueue": {
+    "position": {
+     "x": 1640,
+     "y": 20
+    }
+   },
+   "SetQueueSecurity": {
+    "position": {
+     "x": 1880,
+     "y": 20
+    },
+    "parameters": {
+     "QueueId": {
+      "displayName": "__QUEUE_SECURITY_NAME__"
+     }
+    },
+    "queue": {
+     "text": "__QUEUE_SECURITY_NAME__"
+    }
+   },
+   "SetQueueIT": {
+    "position": {
+     "x": 1880,
+     "y": 260
+    },
+    "parameters": {
+     "QueueId": {
+      "displayName": "__QUEUE_IT_NAME__"
+     }
+    },
+    "queue": {
+     "text": "__QUEUE_IT_NAME__"
+    }
+   },
+   "TransferToQueue": {
+    "position": {
+     "x": 2120,
+     "y": 20
+    }
+   },
+   "TimeoutMessage": {
+    "position": {
+     "x": 1400,
+     "y": 760
+    }
+   },
+   "ErrorMessage": {
+    "position": {
+     "x": 2120,
+     "y": 300
+    }
+   },
+   "NotChat": {
+    "position": {
+     "x": 880,
+     "y": 300
+    }
+   },
+   "Disconnect": {
+    "position": {
+     "x": 2360,
+     "y": 300
+    }
+   },
+   "InvokeAnalysis": {
+    "position": {
+     "x": 1640,
+     "y": 520
+    }
+   },
+   "WaitAnalysis": {
+    "position": {
+     "x": 1880,
+     "y": 520
+    }
+   },
+   "LoadAnalysis": {
+    "position": {
+     "x": 2120,
+     "y": 520
+    }
+   },
+   "ResumeBotReady": {
+    "position": {
+     "x": 2360,
+     "y": 520
+    }
+   },
+   "ResumeBotFailed": {
+    "position": {
+     "x": 2360,
+     "y": 760
+    }
+   }
+  }
+ },
+ "Actions": [
+  {
+   "Identifier": "EnableFlowLogs",
+   "Type": "UpdateFlowLoggingBehavior",
+   "Parameters": {
+    "FlowLoggingBehavior": "Enabled"
+   },
+   "Transitions": {
+    "NextAction": "SetLanguage"
+   }
+  },
+  {
+   "Identifier": "SetLanguage",
+   "Type": "UpdateContactData",
+   "Parameters": {
+    "LanguageCode": "en-US"
+   },
+   "Transitions": {
+    "NextAction": "CheckChat",
+    "Errors": [
+     {
+      "NextAction": "CheckChat",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "CheckChat",
+   "Type": "Compare",
+   "Parameters": {
+    "ComparisonValue": "$.Channel"
+   },
+   "Transitions": {
+    "NextAction": "NotChat",
+    "Conditions": [
+     {
+      "NextAction": "StartStreaming",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "CHAT"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "NotChat",
+      "ErrorType": "NoMatchingCondition"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "StartStreaming",
+   "Type": "InvokeLambdaFunction",
+   "Parameters": {
+    "LambdaFunctionARN": "__STREAM_LAMBDA_ARN__",
+    "InvocationTimeLimitSeconds": "5",
+    "InvocationType": "SYNCHRONOUS",
+    "ResponseValidation": {
+     "ResponseType": "STRING_MAP"
+    }
+   },
+   "Transitions": {
+    "NextAction": "GetInput",
+    "Errors": [
+     {
+      "NextAction": "GetInput",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "GetInput",
+   "Type": "ConnectParticipantWithLexBot",
+   "Parameters": {
+    "LexV2Bot": {
+     "AliasArn": "__LEX_ALIAS_ARN__"
+    },
+    "LexSessionAttributes": {
+     "contact_id": "$.ContactId",
+     "initial_contact_id": "$.InitialContactId"
+    },
+    "LexInitializationData": {
+     "InitialMessage": "Hello"
+    },
+    "LexTimeoutSeconds": {
+     "Text": "900"
+    }
+   },
+   "Transitions": {
+    "NextAction": "CheckNextStep",
+    "Conditions": [
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "HelpdeskIntent"
+       ]
+      }
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "FallbackIntent"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "TimeoutMessage",
+      "ErrorType": "InputTimeLimitExceeded"
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "ErrorType": "NoMatchingCondition"
+     },
+     {
+      "NextAction": "GetInputNoInit",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "GetInputNoInit",
+   "Type": "ConnectParticipantWithLexBot",
+   "Parameters": {
+    "Text": "Hi, I'm the IT Helpdesk virtual assistant. Type \"menu\" to see what I can help you with.",
+    "LexV2Bot": {
+     "AliasArn": "__LEX_ALIAS_ARN__"
+    },
+    "LexSessionAttributes": {
+     "contact_id": "$.ContactId",
+     "initial_contact_id": "$.InitialContactId"
+    },
+    "LexTimeoutSeconds": {
+     "Text": "900"
+    }
+   },
+   "Transitions": {
+    "NextAction": "CheckNextStep",
+    "Conditions": [
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "HelpdeskIntent"
+       ]
+      }
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "FallbackIntent"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "TimeoutMessage",
+      "ErrorType": "InputTimeLimitExceeded"
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "ErrorType": "NoMatchingCondition"
+     },
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "CheckNextStep",
+   "Type": "Compare",
+   "Parameters": {
+    "ComparisonValue": "$.Lex.SessionAttributes.next_step"
+   },
+   "Transitions": {
+    "NextAction": "SetQueueIT",
+    "Conditions": [
+     {
+      "NextAction": "InvokeAnalysis",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "ANALYZE"
+       ]
+      }
+     },
+     {
+      "NextAction": "CheckTargetQueue",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "TRANSFER"
+       ]
+      }
+     },
+     {
+      "NextAction": "Disconnect",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "END"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingCondition"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "InvokeAnalysis",
+   "Type": "InvokeLambdaFunction",
+   "Parameters": {
+    "LambdaFunctionARN": "__ANALYZE_LAMBDA_ARN__",
+    "InvocationTimeLimitSeconds": "60",
+    "InvocationType": "ASYNCHRONOUS",
+    "LambdaInvocationAttributes": {
+     "contact_id": "$.ContactId"
+    },
+    "ResponseValidation": {
+     "ResponseType": "JSON"
+    }
+   },
+   "Transitions": {
+    "NextAction": "WaitAnalysis",
+    "Errors": [
+     {
+      "NextAction": "ResumeBotFailed",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "WaitAnalysis",
+   "Type": "Wait",
+   "Parameters": {
+    "TimeLimitSeconds": "2"
+   },
+   "Transitions": {
+    "NextAction": "LoadAnalysis",
+    "Conditions": [
+     {
+      "NextAction": "LoadAnalysis",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "WaitCompleted"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "LoadAnalysis",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "LoadAnalysis",
+   "Type": "LoadLambdaFunctionResult",
+   "Parameters": {
+    "LambdaInvocationId": "$.LambdaInvocation.InvocationId"
+   },
+   "Transitions": {
+    "NextAction": "ResumeBotReady",
+    "Errors": [
+     {
+      "NextAction": "WaitAnalysis",
+      "ErrorType": "InProgress"
+     },
+     {
+      "NextAction": "ResumeBotFailed",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "ResumeBotReady",
+   "Type": "ConnectParticipantWithLexBot",
+   "Parameters": {
+    "LexV2Bot": {
+     "AliasArn": "__LEX_ALIAS_ARN__"
+    },
+    "LexSessionAttributes": {
+     "contact_id": "$.ContactId",
+     "initial_contact_id": "$.InitialContactId"
+    },
+    "LexInitializationData": {
+     "InitialMessage": "__ANALYSIS_READY__"
+    },
+    "LexTimeoutSeconds": {
+     "Text": "900"
+    }
+   },
+   "Transitions": {
+    "NextAction": "CheckNextStep",
+    "Conditions": [
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "HelpdeskIntent"
+       ]
+      }
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "FallbackIntent"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "TimeoutMessage",
+      "ErrorType": "InputTimeLimitExceeded"
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "ErrorType": "NoMatchingCondition"
+     },
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "ResumeBotFailed",
+   "Type": "ConnectParticipantWithLexBot",
+   "Parameters": {
+    "LexV2Bot": {
+     "AliasArn": "__LEX_ALIAS_ARN__"
+    },
+    "LexSessionAttributes": {
+     "contact_id": "$.ContactId",
+     "initial_contact_id": "$.InitialContactId"
+    },
+    "LexInitializationData": {
+     "InitialMessage": "__ANALYSIS_FAILED__"
+    },
+    "LexTimeoutSeconds": {
+     "Text": "900"
+    }
+   },
+   "Transitions": {
+    "NextAction": "CheckNextStep",
+    "Conditions": [
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "HelpdeskIntent"
+       ]
+      }
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "FallbackIntent"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "TimeoutMessage",
+      "ErrorType": "InputTimeLimitExceeded"
+     },
+     {
+      "NextAction": "CheckNextStep",
+      "ErrorType": "NoMatchingCondition"
+     },
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "CheckTargetQueue",
+   "Type": "Compare",
+   "Parameters": {
+    "ComparisonValue": "$.Lex.SessionAttributes.target_queue"
+   },
+   "Transitions": {
+    "NextAction": "SetQueueIT",
+    "Conditions": [
+     {
+      "NextAction": "SetQueueSecurity",
+      "Condition": {
+       "Operator": "Equals",
+       "Operands": [
+        "SECURITY"
+       ]
+      }
+     }
+    ],
+    "Errors": [
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingCondition"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "SetQueueSecurity",
+   "Type": "UpdateContactTargetQueue",
+   "Parameters": {
+    "QueueId": "__QUEUE_SECURITY_ARN__"
+   },
+   "Transitions": {
+    "NextAction": "TransferToQueue",
+    "Errors": [
+     {
+      "NextAction": "SetQueueIT",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "SetQueueIT",
+   "Type": "UpdateContactTargetQueue",
+   "Parameters": {
+    "QueueId": "__QUEUE_IT_ARN__"
+   },
+   "Transitions": {
+    "NextAction": "TransferToQueue",
+    "Errors": [
+     {
+      "NextAction": "ErrorMessage",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "TransferToQueue",
+   "Type": "TransferContactToQueue",
+   "Parameters": {},
+   "Transitions": {
+    "NextAction": "Disconnect",
+    "Errors": [
+     {
+      "NextAction": "ErrorMessage",
+      "ErrorType": "QueueAtCapacity"
+     },
+     {
+      "NextAction": "ErrorMessage",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "TimeoutMessage",
+   "Type": "MessageParticipant",
+   "Parameters": {
+    "Text": "This chat was closed because there was no reply for a while. Start a new chat any time if you still need help."
+   },
+   "Transitions": {
+    "NextAction": "Disconnect",
+    "Errors": [
+     {
+      "NextAction": "Disconnect",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "ErrorMessage",
+   "Type": "MessageParticipant",
+   "Parameters": {
+    "Text": "Sorry, no IT Helpdesk agent is available right now. Please try again later or email the IT Helpdesk."
+   },
+   "Transitions": {
+    "NextAction": "Disconnect",
+    "Errors": [
+     {
+      "NextAction": "Disconnect",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "NotChat",
+   "Type": "MessageParticipant",
+   "Parameters": {
+    "Text": "This flow supports chat only."
+   },
+   "Transitions": {
+    "NextAction": "Disconnect",
+    "Errors": [
+     {
+      "NextAction": "Disconnect",
+      "ErrorType": "NoMatchingError"
+     }
+    ]
+   }
+  },
+  {
+   "Identifier": "Disconnect",
+   "Type": "DisconnectParticipant",
+   "Parameters": {},
+   "Transitions": {}
+  }
+ ]
+}

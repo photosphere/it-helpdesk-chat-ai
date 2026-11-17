@@ -1,0 +1,14 @@
+{
+  "_comment": "Fictional employees for the mock directory. phone_last4 = last 4 digits of the registered mobile, used for identity verification in chat.",
+  "users": [
+    {"employee_id": "E10001", "name": "Alex Chen", "username": "alex.chen", "email": "alex.chen@example.com",
+     "personal_email": "alex.chen.home@example.net", "phone_last4": "4821", "status": "ACTIVE", "locked": true,
+     "must_change_password": false, "department": "Finance"},
+    {"employee_id": "E10002", "name": "Priya Nair", "username": "priya.nair", "email": "priya.nair@example.com",
+     "personal_email": "priya.n@example.org", "phone_last4": "7305", "status": "ACTIVE", "locked": false,
+     "must_change_password": false, "department": "Marketing"},
+    {"employee_id": "E10003", "name": "Tom Becker", "username": "tom.becker", "email": "tom.becker@example.com",
+     "personal_email": "tbecker@example.net", "phone_last4": "1190", "status": "DISABLED", "locked": false,
+     "must_change_password": false, "department": "Sales"}
+  ]
+}

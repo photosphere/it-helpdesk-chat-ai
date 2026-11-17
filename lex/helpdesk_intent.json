@@ -1,0 +1,29 @@
+{
+  "_comment": "Sample utterances of HelpdeskIntent. The bot Lambda drives the conversation from the raw text (inputTranscript), so the utterances only need to catch typical first messages; anything else goes to FallbackIntent, which also calls the Lambda.",
+  "sampleUtterances": [
+    {"utterance": "Hello"},
+    {"utterance": "Hi"},
+    {"utterance": "Help"},
+    {"utterance": "Main menu"},
+    {"utterance": "Menu"},
+    {"utterance": "Start over"},
+    {"utterance": "I need help"},
+    {"utterance": "I can't sign in to the intranet"},
+    {"utterance": "I cannot log in"},
+    {"utterance": "I forgot my password"},
+    {"utterance": "Reset my password"},
+    {"utterance": "My password is not working"},
+    {"utterance": "My account is locked"},
+    {"utterance": "Account and sign in issues"},
+    {"utterance": "MFA or verification code issue"},
+    {"utterance": "I've uploaded the screenshot"},
+    {"utterance": "I don't have a screenshot"},
+    {"utterance": "Hardware and peripherals"},
+    {"utterance": "My printer is not working"},
+    {"utterance": "I've uploaded a photo"},
+    {"utterance": "Talk to an agent"},
+    {"utterance": "End chat"},
+    {"utterance": "Yes I can sign in now"},
+    {"utterance": "No I still can't sign in"}
+  ]
+}
