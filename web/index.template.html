@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>__COMPANY_NAME__ IT Helpdesk</title>
   <style>
-    :root { --brand: #123456; --text: #1f2933; --muted: #52606d; --line: #d9e2ec; }
+    :root { --brand: #123456; --text: #1f2933; --muted: #52606d; --line: #d9e2ec; --call: #1f7a3a; }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text); background: #f5f7fa; }
-    header { background: var(--brand); color: #fff; padding: 20px 32px; }
+    header { background: var(--brand); color: #fff; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
     header h1 { margin: 0; font-size: 22px; font-weight: 600; }
     header p { margin: 4px 0 0; opacity: .85; font-size: 14px; }
     main { max-width: 960px; margin: 32px auto; padding: 0 24px 96px; }
@@ -19,14 +19,47 @@
     .card ol { padding-left: 20px; margin: 8px 0 0; }
     .hint { margin-top: 24px; }
     code { background: #eef2f7; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
-    a.button { display: inline-block; margin-top: 8px; padding: 8px 14px; border-radius: 6px; background: var(--brand); color: #fff; text-decoration: none; font-size: 14px; }
+    a.button, button.primary { display: inline-block; margin-top: 8px; padding: 8px 14px; border-radius: 6px; background: var(--brand); color: #fff; text-decoration: none; font-size: 14px; border: 0; cursor: pointer; }
+    header button.contact { background: #fff; color: var(--brand); font-weight: 600; padding: 10px 18px; border-radius: 6px; border: 0; cursor: pointer; font-size: 15px; }
     footer { color: var(--muted); font-size: 12px; text-align: center; padding: 24px; }
+
+    /* Own launcher: the widget's default button is hidden (customLaunchBehavior.alwaysHideWidgetButton). */
+    #contact-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 2147483000; display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px; border-radius: 28px; border: 0; background: var(--brand); color: #fff; font-size: 15px; font-weight: 600;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; }
+    #contact-launcher[hidden] { display: none; }
+
+    /* Chooser dialog */
+    dialog#contact-chooser { border: 0; border-radius: 14px; padding: 0; width: min(440px, calc(100vw - 32px)); box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+    dialog#contact-chooser::backdrop { background: rgba(16, 32, 52, .45); }
+    .chooser-head { background: var(--brand); color: #fff; padding: 18px 22px; }
+    .chooser-head h2 { margin: 0; font-size: 19px; }
+    .chooser-head p { margin: 4px 0 0; font-size: 13px; opacity: .85; }
+    .chooser-body { padding: 18px 22px 8px; display: grid; gap: 12px; }
+    .option { display: flex; gap: 14px; align-items: flex-start; text-align: left; width: 100%; padding: 14px 16px; border-radius: 10px;
+      border: 1px solid var(--line); background: #fff; cursor: pointer; font: inherit; color: inherit; }
+    .option:hover, .option:focus-visible { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(18,52,86,.12); outline: none; }
+    .option svg { flex: 0 0 34px; height: 34px; border-radius: 50%; padding: 7px; color: #fff; }
+    .option.chat svg { background: var(--brand); }
+    .option.call svg { background: var(--call); }
+    .option b { display: block; font-size: 16px; margin-bottom: 2px; }
+    .option span { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .chooser-foot { padding: 8px 22px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .chooser-foot small { color: var(--muted); font-size: 12px; }
+    .chooser-foot button { background: none; border: 0; color: var(--muted); font-size: 14px; cursor: pointer; padding: 6px 4px; }
+
+    #contact-status { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 2147483001; max-width: min(520px, calc(100vw - 32px));
+      background: #1f2933; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+    #contact-status[hidden] { display: none; }
   </style>
 </head>
 <body>
   <header>
-    <h1>__COMPANY_NAME__ IT Helpdesk</h1>
-    <p>Get help with sign-in problems, password resets, and hardware issues. Chat with us using the button in the bottom-right corner.</p>
+    <div>
+      <h1>__COMPANY_NAME__ IT Helpdesk</h1>
+      <p>Get help with sign-in problems, password resets, and hardware issues. Chat with us or start a call.</p>
+    </div>
+    <button type="button" class="contact" data-open-chooser>Contact IT Helpdesk</button>
   </header>
   <main>
     <div class="grid">
@@ -40,14 +73,14 @@
       </div>
       <div class="card">
         <h2>Talk to an agent</h2>
-        <p>Prefer a person? Choose "Talk to an agent" in the chat at any time. The agent sees a summary of your conversation.</p>
+        <p>Prefer a person? Start a call, or choose "Talk to an agent" in the chat at any time. The agent sees a summary of your conversation.</p>
       </div>
     </div>
 
     <div class="card hint">
       <h2>Try the sign-in scenario</h2>
       <ol>
-        <li>Open the chat (bottom-right) and choose <b>Account &amp; sign-in issues</b>, then <b>I can't sign in to the intranet</b>.</li>
+        <li>Choose <b>Contact IT Helpdesk</b> (bottom-right), then <b>Start chat</b>. Choose <b>Account &amp; sign-in issues</b>, then <b>I can't sign in to the intranet</b>.</li>
         <li>Download the sample screenshot below and upload it with the paperclip icon. When the file shows in the chat, type <b>done</b>.</li>
         <li>Choose <b>Reset my password</b>, enter employee ID <code>E10001</code> and the last 4 digits <code>4821</code>.</li>
       </ol>
@@ -56,7 +89,161 @@
   </main>
   <footer>Demo page for the Amazon Connect instance __INSTANCE_ALIAS__ (widget __WIDGET_ID__). Fictional company and data.</footer>
 
+  <button type="button" id="contact-launcher" data-open-chooser aria-haspopup="dialog">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z"/></svg>
+    Contact IT Helpdesk
+  </button>
+
+  <dialog id="contact-chooser" aria-labelledby="chooser-title">
+    <div class="chooser-head">
+      <h2 id="chooser-title">How would you like to contact us?</h2>
+      <p>Our virtual assistant and IT Helpdesk agents are here to help.</p>
+    </div>
+    <div class="chooser-body">
+      <button type="button" class="option chat" data-contact="chat">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z"/></svg>
+        <div><b>Start chat</b><span>Get instant help from the virtual assistant. You can share screenshots and talk to an agent at any time.</span></div>
+      </button>
+      <button type="button" class="option call" data-contact="call" __CALL_OPTION_ATTRS__>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>
+        <div><b>Start a call</b><span>Talk to an IT Helpdesk agent from your browser. Your browser will ask to use your microphone.</span></div>
+      </button>
+    </div>
+    <div class="chooser-foot">
+      <small>Calls and chats may be recorded for quality purposes.</small>
+      <button type="button" data-close-chooser>Cancel</button>
+    </div>
+  </dialog>
+
+  <div id="contact-status" role="status" aria-live="polite" hidden></div>
+
   <!-- Amazon Connect communications widget (snippet copied from the Connect admin website) -->
 __WIDGET_SNIPPET__
+
+  <!-- Launch control: the widget opens only from the chooser above.
+       https://docs.aws.amazon.com/connect/latest/adminguide/customize-widget-launch.html -->
+  <script type="text/javascript">
+  (function () {
+    var VOICE_ENABLED = __VOICE_ENABLED__;
+    var launchWidget = null;     // launchCallback handed over by the widget (programmaticLaunch)
+    var widgetLaunched = false;  // the widget has been rendered on this page
+    var chatActive = false;      // a chat session is connected or connecting
+    var callTimer = null;
+
+    var chooser = document.getElementById('contact-chooser');
+    var launcher = document.getElementById('contact-launcher');
+    var statusBox = document.getElementById('contact-status');
+
+    function showStatus(text, ms) {
+      statusBox.textContent = text;
+      statusBox.hidden = false;
+      clearTimeout(showStatus.t);
+      if (ms) { showStatus.t = setTimeout(function () { statusBox.hidden = true; }, ms); }
+    }
+    function hideStatus() { statusBox.hidden = true; }
+
+    function widgetDocument() {
+      // The widget renders the chat in an iframe without a src (same origin as this page).
+      var frame = document.querySelector('#amazon-connect-widget-frame iframe');
+      try { return frame && frame.contentDocument; } catch (e) { return null; }
+    }
+    function widgetOpenButton() { return document.getElementById('amazon-connect-open-widget-button'); }
+    function widgetIsMinimized() {
+      var b = widgetOpenButton();
+      return !!b && !/minimi/i.test(b.getAttribute('aria-label') || '');
+    }
+
+    // Start chat: render the widget (it opens and starts the chat right away), or show the ongoing chat.
+    function openChat() {
+      if (widgetLaunched && chatActive) {
+        if (widgetIsMinimized()) { widgetOpenButton().click(); }
+        return true;
+      }
+      if (!launchWidget) {
+        showStatus('The chat is still loading. Please try again in a moment.', 4000);
+        return false;
+      }
+      launchWidget();             // re-renders the widget; a finished chat is replaced by a new one
+      widgetLaunched = true;
+      chatActive = true;
+      launcher.hidden = true;
+      return true;
+    }
+
+    // Start a call: the widget has no API to start a call directly. Its "Start a Call" button lives in the
+    // chat window and is enabled once the chat is connected, so open the chat and press it for the customer.
+    function startCall() {
+      if (!openChat()) { return; }
+      showStatus('Connecting your call. Your browser will ask to use the microphone...');
+      var started = Date.now();
+      var pressed = false;
+      clearInterval(callTimer);
+      callTimer = setInterval(function () {
+        var doc = widgetDocument();
+        var btn = doc && doc.querySelector('[data-testid="start-call-button"]');
+        if (!pressed && btn && !btn.disabled) {
+          btn.click();
+          pressed = true;
+          started = Date.now();
+          return;
+        }
+        if (pressed) {
+          // Some widget versions ask for confirmation before the call starts.
+          var confirm = doc && Array.prototype.slice.call(doc.querySelectorAll('button')).filter(function (b) {
+            var t = (b.innerText || b.getAttribute('aria-label') || '').trim();
+            return b.getAttribute('data-testid') !== 'start-call-button' && /^(start( a)? call|call|confirm|yes)$/i.test(t) && !b.disabled;
+          })[0];
+          if (confirm) { confirm.click(); }
+          if (Date.now() - started > 3000) {
+            clearInterval(callTimer);
+            showStatus('Your call is starting in the chat window.', 5000);
+          }
+          return;
+        }
+        if (Date.now() - started > 20000) {
+          clearInterval(callTimer);
+          showStatus('The call could not start automatically. Choose "Start a Call" at the bottom of the chat window.', 8000);
+        }
+      }, 500);
+    }
+
+    function openChooser() {
+      if (widgetLaunched && chatActive) { openChat(); return; }   // one conversation at a time
+      if (typeof chooser.showModal === 'function') { chooser.showModal(); } else { chooser.setAttribute('open', ''); }
+      var first = chooser.querySelector('.option:not([hidden])');
+      if (first) { first.focus(); }
+    }
+    function closeChooser() {
+      if (typeof chooser.close === 'function') { chooser.close(); } else { chooser.removeAttribute('open'); }
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-open-chooser]'), function (el) {
+      el.addEventListener('click', openChooser);
+    });
+    chooser.querySelector('[data-close-chooser]').addEventListener('click', closeChooser);
+    chooser.addEventListener('click', function (e) { if (e.target === chooser) { closeChooser(); } });  // click on backdrop
+    chooser.querySelector('[data-contact="chat"]').addEventListener('click', function () { closeChooser(); hideStatus(); openChat(); });
+    var callOption = chooser.querySelector('[data-contact="call"]');
+    if (VOICE_ENABLED) {
+      callOption.addEventListener('click', function () { closeChooser(); startCall(); });
+    } else {
+      callOption.hidden = true;
+    }
+
+    amazon_connect('customLaunchBehavior', {
+      skipIconButtonAndAutoLaunch: true,   // when launched, open the chat window right away
+      alwaysHideWidgetButton: true,        // the widget's own button only shows during an ongoing chat
+      programmaticLaunch: function (launchCallback) { launchWidget = launchCallback; }
+    });
+    amazon_connect('registerCallback', {
+      'CONNECTION_ESTABLISHED': function () { chatActive = true; launcher.hidden = true; },
+      'CHAT_ENDED': function () { chatActive = false; clearInterval(callTimer); launcher.hidden = false; },
+      'CHAT_INIT_FAILED': function () {
+        chatActive = false; clearInterval(callTimer); launcher.hidden = false;
+        showStatus('Sorry, we could not start the conversation. Please try again.', 6000);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
